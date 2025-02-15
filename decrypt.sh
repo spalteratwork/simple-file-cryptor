@@ -18,11 +18,6 @@ if [ $# -eq 0 ]; then
     exit;
 fi
 
-#if [ ! -d "$1" ]; then
-#  echo "$1 ist kein Verzeichnis!";
-#  exit;
-#fi
-
 while getopts ":r:" arg; do
   case $arg in
     r) # Specify p value.
