@@ -8,25 +8,21 @@ BOLD=$(tput bold)
 UNDERLINE=$(tput smul)
 NORMAL=$(tput sgr0)
 
-filename=$1
-doRecursive=0;
+#filename=$1
+#doRecursive=0;
 
-if [ $# -eq 0 ]; then
-    echo "An input parameter specifying a file or directory is required.";
-    echo "${BOLD}SYNOPSIS:${NORMAL}";
-    echo -e "\t./encrypt.sh [${UNDERLINE}OPTION${NORMAL}] ${UNDERLINE}FILENAME${NORMAL}";
-    echo -e "\t./encrypt.sh [${UNDERLINE}OPTION${NORMAL}] ${UNDERLINE}FOLDERNAME${NORMAL}";
-    echo 
-    exit;
+. _cryptor.lib
+
+if [[ $# -eq 0 || "$filename" = "" || $doPrintHelp -eq 1 ]]; then
+    printf "%b\n" "An input parameter specifying a file or directory is required for encryption.";
+    printf "%b\n" "${style_bold}SYNOPSIS:${style_normal}";
+    printf "%b\n" "\t./encrypt.sh [${style_underline}OPTION${style_normal}] ${style_underline}FILENAME${style_normal}";
+    printf "%b\n\n" "\t./encrypt.sh [${style_underline}OPTION${style_normal}] ${style_underline}FOLDERNAME${style_normal}";
+    printf "%b\n" "${style_bold}OPTIONS:${style_normal}";
+    printf "%b\n" "\t${style_bold}-r, -R, --recursive${style_normal}";
+    printf "%b\n\n" "\t\tencrypt directories and their contents recursively";
+    exit 0;
 fi
-
-while getopts ":r:" arg; do
-  case $arg in
-    r) # Specify p value.
-      doRecursive=1;
-      ;;
-  esac
-done
 
 echo $doRecursive
 exit 0;
@@ -37,7 +33,7 @@ printOk() {
 
 printErrorAndExit() {
     echo -e "[ ${RED}FAILED${NC} ]";
-    echo -e "${RED}*** ABORT *** ${NC}- $filename"
+    echo -e "${RED}*** ABORT *** ${NC}- $1"
     exit 0;
 }
 
