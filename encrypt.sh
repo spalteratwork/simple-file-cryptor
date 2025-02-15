@@ -11,7 +11,7 @@ NORMAL=$(tput sgr0)
 #filename=$1
 #doRecursive=0;
 
-. _cryptor.lib
+. _cryptor.lib.sh
 
 if [[ $# -eq 0 || "$filename" = "" || $doPrintHelp -eq 1 ]]; then
     printf "%b\n" "An input parameter specifying a file or directory is required for encryption.";
