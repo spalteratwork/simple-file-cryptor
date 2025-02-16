@@ -2,11 +2,16 @@
 
 ##### Functions
 
+printOk() {
+    printf "%b\n" "[ ${color_green}OK${color_default} ]";
+}
+
 printErrorAndExit() {
     if [ $# -eq 1 ]; then
         printf "%b\n" "[ ${color_red}FAILED${color_default} ]";
     fi
     printf "%b\n" "${color_red}*** ABORT *** ${color_default}- $1";
+    
     exit 0;
 }
 
@@ -21,6 +26,13 @@ getOptionsFromCommandLine() {
             printErrorAndExit "Invalid argument: $var. Use -h to display usage information." 0;
         else
             filename="$var";
+
+            # Check if param is a folder and remove a trailing slash
+            if [ -d "$filename" ]; then
+                if [[ "$filename" == */ ]]; then
+                    filename="${filename%/}"  # remove a trailing slash
+                fi
+            fi
         fi
     done
 }
