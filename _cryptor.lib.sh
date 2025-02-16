@@ -11,7 +11,7 @@ printErrorAndExit() {
         printf "%b\n" "[ ${color_red}FAILED${color_default} ]";
     fi
     printf "%b\n" "${color_red}*** ABORT *** ${color_default}- $1";
-    
+
     exit 0;
 }
 
@@ -40,9 +40,6 @@ getOptionsFromCommandLine() {
 
 
 ##### variables
-
-# stats
-stat_seconds=0;
 
 # work vars
 filename=;
