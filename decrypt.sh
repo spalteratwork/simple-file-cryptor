@@ -1,54 +1,37 @@
 #!/bin/bash
 
-SECONDS=0
-RED='\033[1;31m';
-GREEN='\033[1;32m';
-NC='\033[0m'; # No Color
-BOLD=$(tput bold)
-UNDERLINE=$(tput smul)
-NORMAL=$(tput sgr0)
-doRecursive=1;
+# Import cryptor-lib
+. _cryptor.lib.sh
 
-if [ $# -eq 0 ]; then
-    echo "An input parameter specifying a file or directory is required.";
-    echo "${BOLD}SYNOPSIS:${NORMAL}";
-    echo -e "\t./decrypt.sh ${UNDERLINE}filename${NORMAL}";
-    echo -e "\t./decrypt.sh ${UNDERLINE}foldername${NORMAL}";
-    echo 
-    exit;
+# Check if usage info needs to be displayed...
+if [[ $# -eq 0 || "$filename" = "" || $doPrintHelp -eq 1 ]]; then
+    printf "%b\n" "An input parameter specifying a file or directory is required for encryption.";
+    printf "%b\n" "${style_bold}SYNOPSIS:${style_normal}";
+    printf "%b\n" "\t./decrypt.sh [${style_underline}OPTION${style_normal}] ${style_underline}FILENAME${style_normal}";
+    printf "%b\n\n" "\t./decrypt.sh [${style_underline}OPTION${style_normal}] ${style_underline}FOLDERNAME${style_normal}";
+    printf "%b\n" "${style_bold}OPTIONS:${style_normal}";
+    printf "%b\n" "\t${style_bold}-r, -R, --recursive${style_normal}";
+    printf "%b\n\n" "\t\tdecrypt directories and their contents recursively";
+    exit 0;
 fi
 
-while getopts ":r:" arg; do
-  case $arg in
-    r) # Specify p value.
-      doRecursive=1;
-      ;;
-  esac
-done
-
-printOk() {
-    echo -e "[ ${GREEN}OK${NC} ]";
-}
-
-printErrorAndExit() {
-    echo -e "[ ${RED}FAILED${NC} ]";
-    echo -e "${RED}*** ABORT *** ${NC}- $1"
-    exit 0;
-}
-
+# Decrypt the given file (Param 1). With the encryption, the sha1 checksum was stored in the filename. This value is 
+# determined here and then compared with the sha checksum of the decrypted file. If these are identical, the decryption 
+# was successful and the encrypted file can be deleted.
 decryptFile() {
     printf "Decrypting file %-165s " "$1"
 
     filename_size=${#1} 
-    #if [ $filename_size -gt 46 ]; then
     if [[ "$1" =~ ^.*\.[a-z0-9]{40}\.gpg$ ]]; then
-        filename=${1:0:$filename_size-45};
-        extension=${1:$filename_size-3:3};
+        myFilename=${1:0:$filename_size-45};
+        #extension=${1:$filename_size-3:3};
         chksum=${1:$filename_size-44:40};
 
-        gpg --passphrase iAUQLlgwYvYpEkyoqQI96aH6AJ7V40PfiAUQLlgwYvYpEkyoqQI96aH6AJ7V40PfiAUQLlgwYvYpEkyoqQI96aH6AJ7V40Pf --batch -d --output $filename $1 2>/dev/null
-        chksum_new=$(sha1sum $filename | awk '{print $1}')
+        gpg --passphrase iAUQLlgwYvYpEkyoqQI96aH6AJ7V40PfiAUQLlgwYvYpEkyoqQI96aH6AJ7V40PfiAUQLlgwYvYpEkyoqQI96aH6AJ7V40Pf --batch -d --output $myFilename $1 2>/dev/null
+        chksum_new=$(sha1sum $myFilename | awk '{print $1}')
         if [ "$chksum" = "$chksum_new" ]; then
+            chmod --reference="$1" -- "$myFilename"; # Keep file permission
+            touch -r "$1" "$myFilename"; # keep file attributes        
             rm -f $1
             printOk;
         else
@@ -59,36 +42,27 @@ decryptFile() {
     fi
 }
 
+# Decrypt the specified file or browse the specified directory for decryptable files.
 scanFolder () {
     for entry in "$1"/*
     do
         if [[ -d "$entry" && $doRecursive -eq 1 ]]; then
-            #echo "$entry is dir"
             scanFolder $entry
         elif [[ (-f "$entry" && "$entry" == *.gpg) ]]; then
-            #echo "$entry is file"
             decryptFile $entry
         fi
     done
 }
 
-if [ -d "$1" ]; then
-    # Parameter überprüfen und Slash entfernen, falls vorhanden
-    if [[ "$1" == */ ]]; then
-        myDir="${1%/}"  # Entfernt das abschließende Slash
-    else
-        myDir="$1"
-    fi
+# Start decryption
+if [ -d "$filename" ]; then
+    scanFolder $filename;
 
-    scanFolder $myDir
-
-    echo
-    echo "Directory $myDir successfully decrypted. Runtime: $((SECONDS / 60))m:$((SECONDS % 60))s.";
+    printf "\n%s\n" "Directory $filename successfully decrypted. Runtime: $((stat_seconds / 60))m:$((stat_seconds % 60))s.";
 elif [[ (-f "$1" && "$1" == *.gpg) ]]; then
     decryptFile $1
 
-    echo
-    echo "File $1 successfully decrypted. Runtime: $((SECONDS / 60))m:$((SECONDS % 60))s.";
+    printf "\n%s\n" "File $filename successfully decrypted. Runtime: $((stat_seconds / 60))m:$((stat_seconds % 60))s.";
 else
-    echo "File $1 not exists or is neither a gpg file nor a directory.";
+    printf "%s\n" "File $1 not exists or is neither a gpg file nor a directory.";
 fi
