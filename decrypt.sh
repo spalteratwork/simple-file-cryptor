@@ -58,11 +58,11 @@ scanFolder () {
 if [ -d "$filename" ]; then
     scanFolder $filename;
 
-    printf "\n%s\n" "Directory $filename successfully decrypted. Runtime: $((stat_seconds / 60))m:$((stat_seconds % 60))s.";
+    printf "\n%s\n" "Directory $filename successfully decrypted. Runtime: $((SECONDS / 60))m:$((SECONDS % 60))s.";
 elif [[ (-f "$1" && "$1" == *.gpg) ]]; then
     decryptFile $1
 
-    printf "\n%s\n" "File $filename successfully decrypted. Runtime: $((stat_seconds / 60))m:$((stat_seconds % 60))s.";
+    printf "\n%s\n" "File $filename successfully decrypted. Runtime: $((SECONDS / 60))m:$((SECONDS % 60))s.";
 else
     printf "%s\n" "File $1 not exists or is neither a gpg file nor a directory.";
 fi

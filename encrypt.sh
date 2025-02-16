@@ -51,11 +51,11 @@ scanFolder () {
 if [ -d "$filename" ]; then
     scanFolder $filename;
 
-    printf "\n%s\n" "Directory $filename successfully encrypted. Runtime: $((stat_seconds / 60))m:$((stat_seconds % 60))s.";
+    printf "\n%s\n" "Directory $filename successfully encrypted. Runtime: $((SECONDS / 60))m:$((SECONDS % 60))s.";
 elif [[ (-f "$filename" && ! "$filename" == *.gpg) ]]; then
     encryptFile $filename
 
-    printf "\n%s\n" "File $filename successfully encrypted. Runtime: $((stat_seconds / 60))m:$((stat_seconds % 60))s.";
+    printf "\n%s\n" "File $filename successfully encrypted. Runtime: $((SECONDS / 60))m:$((SECONDS % 60))s.";
 else
     printf "%s\n" "File $filename not exists or is already a gpg file or not a directory.";
 fi
